@@ -12,8 +12,8 @@ uint8_t temprature_sens_read();
 uint8_t temprature_sens_read();
 
 String apiKey = "OGE7EF44NDS2YL4P";                  //  Enter your Write API key from ThingSpeak
-const char *ssid =  "4G-Gateway-484A";                                    // replace with your wifi ssid and wpa2 key
-const char *pass =  "7N8H0T5A14D";
+const char *ssid =  "wifi";                                    // replace with your wifi ssid and wpa2 key
+const char *pass =  "salasana";
 const char* server = "api.thingspeak.com";
 WiFiClient client;
 void setup() 
