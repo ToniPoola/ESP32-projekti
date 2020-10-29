@@ -1,74 +1,75 @@
-#include <ThingSpeak.h>
+#include <Arduino.h>
 #include <WiFi.h>
+#include "ThingSpeak.h"
 
+#define CHANNEL_ID 1204080
+#define CHANNEL_API_KEY "OGE7EF44NDS2YL4P"
 
 #ifdef __cplusplus
-extern "C" {
-#endif
-uint8_t temprature_sens_read();
+  extern "C" {
+ #endif
+ 
+  uint8_t temprature_sens_read();
+ 
 #ifdef __cplusplus
 }
 #endif
+ 
 uint8_t temprature_sens_read();
 
-String apiKey = "OGE7EF44NDS2YL4P";                  //  Enter your Write API key from ThingSpeak
-const char *ssid =  "wifi";                                    // replace with your wifi ssid and wpa2 key
-const char *pass =  "salasana";
-const char* server = "api.thingspeak.com";
 WiFiClient client;
-void setup() 
-{
-    Serial.begin(115200);
-    delay(10);
-    Serial.println("Connecting to ");
-    Serial.println(ssid);
-    WiFi.begin(ssid, pass);
-    while (WiFi.status() != WL_CONNECTED) 
-    {
-        delay(3000);
-        Serial.print(".");
-    }
-    Serial.println("");
-    Serial.println("WiFi connected");
- 
+
+float temperature;
+
+#define WIFI_NETWORK "Wifin nimi"
+#define WIFI_PASSWORD "salasana"
+#define WIFI_TIMEOUT_MS 20000
+
+
+void connectToWiFi(){
+  Serial.print("yhdistetään wifiin");
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(WIFI_NETWORK, WIFI_PASSWORD);
+
+
+  unsigned long startAttempTime = millis();
+
+  while(WiFi.status() != WL_CONNECTED && millis() - startAttempTime < WIFI_TIMEOUT_MS){
+  Serial.print(".");
+  delay(100);
 }
-void loop() 
-{
-  
-int h = 0;
+
+
+if(WiFi.status() != WL_CONNECTED){
+  Serial.println(" Failed ");
+}else{
+  Serial.print("connected");
+  Serial.println(WiFi.localIP());
+}
+}
+
+void setup() {
+   // put your setup code here, to run once:
+  Serial.begin(115200);
+  connectToWiFi();
+  ThingSpeak.begin(client);
+}
+
+void loop() {
 float t =0;
+t = ((temprature_sens_read()-32)/1.8);
 
-h = hallRead();
-t = ((temprature_sens_read()-32)/1.8);                //changing temperature parameter to celsius
- if (client.connect(server,80))                                 //   "184.106.153.149" or api.thingspeak.com
-    {  
-                            
-    String postStr = apiKey;
-    postStr +="&field1=";
-    postStr += String(h);
-    postStr += "&field2=";
-    postStr += String(t);
-    postStr += "\r\n\r\n";
+  Serial.print("Temperature: ");
+  
+  // Convert raw temperature in F to Celsius degrees
+  Serial.print((temprature_sens_read() - 32) / 1.8);
+  Serial.println(" C");
+// counter++;
 
-    client.print("POST /update HTTP/1.1\n");
-    client.print("Host: api.thingspeak.com\n");
-    client.print("Connection: close\n");
-    client.print("X-THINGSPEAKAPIKEY: "+apiKey+"\n");
-    client.print("Content-Type: application/x-www-form-urlencoded\n");
-    client.print("Content-Length: ");
-    client.print(postStr.length());
-    client.print("\n\n");
-    client.print(postStr);
- 
-    Serial.print("Hall: ");
-    Serial.println(h);
-    Serial.print("Temperature:");
-    Serial.print(t);
-    Serial.println(" C");
-                             
-    Serial.println("%. Send to Thingspeak.");
-}
-    client.stop();
-    Serial.println("Waiting...");
-    delay(20000);
+ThingSpeak.setField( 1, t);
+ThingSpeak.setField( 2, WiFi.RSSI());
+
+ThingSpeak.writeFields(CHANNEL_ID, CHANNEL_API_KEY);
+
+delay(100000);
 }
