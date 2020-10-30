@@ -1,16 +1,16 @@
+//käytetyt kirjastot
 #include <Arduino.h>
 #include <WiFi.h>
 #include "ThingSpeak.h"
 
+//thingspeak kanavan koodit
 #define CHANNEL_ID 1204080
-#define CHANNEL_API_KEY "OGE7EF44NDS2YL4P"
+#define CHANNEL_API_KEY "API_Key"
 
 #ifdef __cplusplus
-  extern "C" {
- #endif
- 
-  uint8_t temprature_sens_read();
- 
+extern "C" {
+#endif 
+uint8_t temprature_sens_read();
 #ifdef __cplusplus
 }
 #endif
@@ -19,11 +19,9 @@ uint8_t temprature_sens_read();
 
 WiFiClient client;
 
-float temperature;
-
 #define WIFI_NETWORK "Wifin nimi"
 #define WIFI_PASSWORD "salasana"
-#define WIFI_TIMEOUT_MS 20000
+#define WIFI_TIMEOUT_MS 20000 //aikakatkaisu wifille jos kesto <20sek 
 
 
 void connectToWiFi(){
@@ -49,27 +47,27 @@ if(WiFi.status() != WL_CONNECTED){
 }
 
 void setup() {
-   // put your setup code here, to run once:
+   
   Serial.begin(115200);
   connectToWiFi();
   ThingSpeak.begin(client);
 }
 
 void loop() {
-float t =0;
-t = ((temprature_sens_read()-32)/1.8);
+  float t =0;
+  t = ((temprature_sens_read()-32)/1.8);
 
   Serial.print("Temperature: ");
   
   // Convert raw temperature in F to Celsius degrees
   Serial.print((temprature_sens_read() - 32) / 1.8);
   Serial.println(" C");
-// counter++;
 
-ThingSpeak.setField( 1, t);
-ThingSpeak.setField( 2, WiFi.RSSI());
 
-ThingSpeak.writeFields(CHANNEL_ID, CHANNEL_API_KEY);
+  ThingSpeak.setField( 1, t);
+  ThingSpeak.setField( 2, WiFi.RSSI());
 
-delay(100000);
+  ThingSpeak.writeFields(CHANNEL_ID, CHANNEL_API_KEY);
+
+   delay(20000);
 }
